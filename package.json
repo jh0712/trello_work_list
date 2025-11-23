@@ -1,0 +1,23 @@
+{
+  "name": "trello-work-list",
+  "version": "1.0.0",
+  "description": "Personal Trello work list management system",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun run --hot src/server.ts",
+    "start": "bun run src/server.ts",
+    "build": "bun build src/server.ts --outdir ./dist"
+  },
+  "keywords": ["trello", "personal", "task-management"],
+  "author": "User",
+  "license": "MIT",
+  "dependencies": {
+    "elysia": "^0.8.0",
+    "@elysiajs/static": "^0.8.0",
+    "@elysiajs/cors": "^0.8.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.0.0",
+    "typescript": "^5.0.0"
+  }
+}
