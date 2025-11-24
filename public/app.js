@@ -31,10 +31,6 @@ class TrelloApp {
         document.getElementById('tagSelectAllBtn').addEventListener('click', () => this.tagSelectAllTags());
         document.getElementById('tagClearSelectionBtn').addEventListener('click', () => this.tagClearTagSelection());
         
-        // Sync type radio buttons
-        document.querySelectorAll('input[name="syncType"]').forEach(radio => {
-            radio.addEventListener('change', (e) => this.toggleBoardSelection(e.target.value));
-        });
         
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
@@ -209,10 +205,6 @@ class TrelloApp {
         this.updateSelectedBoardsText();
     }
 
-    toggleBoardSelection(syncType) {
-        const boardSelection = document.getElementById('boardSelection');
-        boardSelection.style.display = syncType === 'selective' ? 'block' : 'none';
-    }
 
     selectAllBoards() {
         const select = document.getElementById('boardMultiSelect');
@@ -324,11 +316,6 @@ class TrelloApp {
     }
 
     getSelectedBoards() {
-        const syncType = document.querySelector('input[name="syncType"]:checked').value;
-        if (syncType === 'all') {
-            return null; // null means sync all boards
-        }
-        
         const select = document.getElementById('boardMultiSelect');
         const selectedValues = Array.from(select.selectedOptions).map(option => option.value);
         return selectedValues.length > 0 ? selectedValues : [];
@@ -343,7 +330,16 @@ class TrelloApp {
         
         try {
             const selectedBoards = this.getSelectedBoards();
-            const body = selectedBoards ? JSON.stringify({ boardIds: selectedBoards }) : JSON.stringify({});
+            
+            // 要求用戶必須選擇至少一個 Board
+            if (selectedBoards.length === 0) {
+                this.showMessage('請至少選擇一個 Board 進行同步', 'error');
+                syncBtn.disabled = false;
+                syncBtn.textContent = originalText;
+                return;
+            }
+            
+            const body = JSON.stringify({ boardIds: selectedBoards });
             
             const response = await fetch('/api/sync', { 
                 method: 'POST',
@@ -355,8 +351,7 @@ class TrelloApp {
             const result = await response.json();
             
             if (response.ok) {
-                const syncType = selectedBoards ? `選擇性同步 ${selectedBoards.length} 個 Board` : '同步所有 Board';
-                this.showMessage(`${syncType} 成功！`, 'success');
+                this.showMessage(`同步 ${selectedBoards.length} 個 Board 成功！`, 'success');
                 await this.loadLastSync();
                 await this.loadBoards();
                 await this.loadMembers();

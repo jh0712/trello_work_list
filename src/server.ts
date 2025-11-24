@@ -96,31 +96,28 @@ const server = new Elysia()
         try {
           console.log('Starting Trello data sync...');
           
-          // Parse request body to check for selective sync
-          let boardIds: string[] | undefined;
-          if (body && typeof body === 'object' && 'boardIds' in body) {
-            boardIds = body.boardIds as string[];
-            console.log(`Selective sync requested for ${boardIds.length} boards:`, boardIds);
-          } else {
-            console.log('Full sync requested for all boards');
+          // Parse request body to get selected boards
+          if (!body || typeof body !== 'object' || !('boardIds' in body)) {
+            return { 
+              success: false, 
+              error: '請提供要同步的 Board ID 列表' 
+            };
           }
           
-          // Fetch boards, cards, and members
-          let boards: any[];
-          let allCards: any[];
-          let allMembers: any[];
-          
-          if (boardIds && boardIds.length > 0) {
-            // Selective sync
-            boards = await trelloService.getSpecificBoards(boardIds);
-            allCards = await trelloService.getAllCards(boardIds);
-            allMembers = await trelloService.getAllMembers(boardIds);
-          } else {
-            // Full sync
-            boards = await trelloService.getBoards();
-            allCards = await trelloService.getAllCards();
-            allMembers = await trelloService.getAllMembers();
+          const boardIds = body.boardIds as string[];
+          if (!boardIds || boardIds.length === 0) {
+            return { 
+              success: false, 
+              error: '請至少選擇一個 Board 進行同步' 
+            };
           }
+          
+          console.log(`選擇性同步 ${boardIds.length} 個 Board:`, boardIds);
+          
+          // Fetch boards, cards, and members for selected boards only
+          const boards = await trelloService.getSpecificBoards(boardIds);
+          const allCards = await trelloService.getAllCards(boardIds);
+          const allMembers = await trelloService.getAllMembers(boardIds);
           
           console.log(`Fetched ${boards.length} boards, ${allCards.length} cards, and ${allMembers.length} members`);
           
@@ -128,14 +125,12 @@ const server = new Elysia()
           await storage.addCards(allCards, boards, allMembers);
           console.log('Data stored successfully');
           
-          const syncType = boardIds ? `選擇性同步 ${boards.length} 個 Board` : `同步所有 ${boards.length} 個 Board`;
-          
           return { 
             success: true, 
-            message: `${syncType}，共 ${allCards.length} 張卡片`,
+            message: `同步 ${boards.length} 個 Board 完成，共 ${allCards.length} 張卡片`,
             boardCount: boards.length,
             cardCount: allCards.length,
-            syncType: boardIds ? 'selective' : 'full'
+            syncType: 'selective'
           };
         } catch (error: any) {
           console.error('Sync failed:', error);

@@ -83,19 +83,6 @@
             gap: 15px;
         }
 
-        .sync-options {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 10px;
-        }
-
-        .sync-options label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            font-weight: 500;
-        }
 
         .board-selection {
             background: #f8f9fa;
@@ -768,15 +755,7 @@
         <div class="sync-section">
             <h2>數據同步</h2>
             <div class="sync-controls">
-                <div class="sync-options">
-                    <label>
-                        <input type="radio" name="syncType" value="all" checked> 同步所有 Board
-                    </label>
-                    <label>
-                        <input type="radio" name="syncType" value="selective"> 選擇性同步
-                    </label>
-                </div>
-                <div id="boardSelection" class="board-selection" style="display: none;">
+                <div id="boardSelection" class="board-selection">
                     <h4>選擇要同步的 Board：</h4>
                     <div class="board-select-container">
                         <select id="boardMultiSelect" class="board-multi-select" multiple>
