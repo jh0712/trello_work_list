@@ -154,6 +154,11 @@ trello-work-list/
 - **數據存儲**：本地 JSON 檔案
 - **API**：Trello REST API
 
+## 畫面
+![Trello Work List](trello_work_list_1.png)
+![Trello Work Report](trello_work_report_1.png)
+
+
 ## 授權
 
 MIT License
