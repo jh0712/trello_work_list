@@ -421,6 +421,7 @@ class TrelloApp {
                             <th class="sortable" data-field="name">卡片標題</th>
                             <th class="sortable" data-field="boardName">Board</th>
                             <th>標籤</th>
+                            <th>成員</th>
                             <th class="sortable" data-field="dueComplete">狀態</th>
                             <th class="sortable" data-field="due">截止日期</th>
                             <th class="sortable" data-field="dateLastActivity">最後活動</th>
@@ -443,6 +444,12 @@ class TrelloApp {
             `<span class="label" style="background-color: ${this.getLabelColor(label.color)}">${label.name || label.color}</span>`
         ).join('');
 
+        const members = card.members && card.members.length > 0 
+            ? card.members.map(member => 
+                `<span class="member-badge">${member.fullName || member.username}</span>`
+              ).join('')
+            : '<span class="no-members">無成員</span>';
+
         const dueDate = card.due ? new Date(card.due).toLocaleDateString('zh-TW') : '-';
         const lastActivity = new Date(card.dateLastActivity).toLocaleDateString('zh-TW');
         const status = card.dueComplete ? '已完成' : '進行中';
@@ -459,6 +466,9 @@ class TrelloApp {
                 </td>
                 <td class="card-labels-cell">
                     <div class="card-labels">${labels}</div>
+                </td>
+                <td class="card-members-cell">
+                    <div class="card-members">${members}</div>
                 </td>
                 <td>
                     <span class="status-badge ${statusClass}">${status}</span>

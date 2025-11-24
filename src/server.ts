@@ -79,12 +79,17 @@ const server = new Elysia()
         const boards = await storage.getBoards();
         const boardMap = new Map(boards.map(board => [board.id, board.name]));
         
-        const cardsWithBoardNames = cards.map(card => ({
+        // Add member names to cards
+        const members = await storage.getMembers();
+        const memberMap = new Map(members.map(member => [member.id, member]));
+        
+        const cardsWithBoardNamesAndMembers = cards.map(card => ({
           ...card,
-          boardName: boardMap.get(card.idBoard) || 'Unknown Board'
+          boardName: boardMap.get(card.idBoard) || 'Unknown Board',
+          members: card.idMembers ? card.idMembers.map(memberId => memberMap.get(memberId)).filter(member => member) : []
         }));
         
-        return cardsWithBoardNames;
+        return cardsWithBoardNamesAndMembers;
       })
 
       .post('/sync', async ({ body }) => {

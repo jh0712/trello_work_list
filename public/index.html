@@ -490,6 +490,32 @@
             white-space: nowrap;
         }
 
+        .card-members-cell {
+            min-width: 120px;
+        }
+
+        .card-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+        }
+
+        .member-badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            background-color: #6c757d;
+            color: white;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .no-members {
+            color: #6c757d;
+            font-size: 11px;
+            font-style: italic;
+        }
+
         .status-badge {
             padding: 4px 8px;
             border-radius: 12px;
@@ -714,6 +740,10 @@
             }
 
             .card-labels-cell {
+                min-width: 80px;
+            }
+
+            .card-members-cell {
                 min-width: 80px;
             }
 
