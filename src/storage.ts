@@ -157,6 +157,7 @@ export class DataStorage {
     boardId?: string;
     boardIds?: string[];
     labels?: string[];
+    tagNames?: string[];
     dateFrom?: string;
     dateTo?: string;
     completed?: boolean;
@@ -176,6 +177,12 @@ export class DataStorage {
       if (filters.labels && filters.labels.length > 0) {
         cards = cards.filter(card => 
           card.labels.some(label => filters.labels!.includes(label.name))
+        );
+      }
+      
+      if (filters.tagNames && filters.tagNames.length > 0) {
+        cards = cards.filter(card => 
+          card.labels.some(label => filters.tagNames!.includes(label.name))
         );
       }
       
@@ -216,5 +223,20 @@ export class DataStorage {
   async getMembers() {
     const data = await this.loadData();
     return data.members || [];
+  }
+
+  async getTags() {
+    const data = await this.loadData();
+    const tagSet = new Set<string>();
+    
+    data.cards.forEach(card => {
+      card.labels.forEach(label => {
+        if (label.name && label.name.trim()) {
+          tagSet.add(label.name.trim());
+        }
+      });
+    });
+    
+    return Array.from(tagSet).sort();
   }
 }

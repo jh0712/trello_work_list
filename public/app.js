@@ -15,6 +15,7 @@ class TrelloApp {
         await this.loadLastSync();
         await this.loadBoards();
         await this.loadMembers();
+        await this.loadTags();
         await this.loadAvailableBoards();
         await this.loadCards();
     }
@@ -27,6 +28,8 @@ class TrelloApp {
         document.getElementById('clearSelectionBtn').addEventListener('click', () => this.clearBoardSelection());
         document.getElementById('filterSelectAllBtn').addEventListener('click', () => this.filterSelectAllBoards());
         document.getElementById('filterClearSelectionBtn').addEventListener('click', () => this.filterClearBoardSelection());
+        document.getElementById('tagSelectAllBtn').addEventListener('click', () => this.tagSelectAllTags());
+        document.getElementById('tagClearSelectionBtn').addEventListener('click', () => this.tagClearTagSelection());
         
         // Sync type radio buttons
         document.querySelectorAll('input[name="syncType"]').forEach(radio => {
@@ -118,6 +121,50 @@ class TrelloApp {
             });
         } catch (error) {
             console.error('Failed to load members:', error);
+        }
+    }
+
+    async loadTags() {
+        try {
+            const response = await fetch('/api/tags');
+            const tags = await response.json();
+            const tagCheckboxes = document.getElementById('tagCheckboxes');
+            
+            // Clear existing content
+            tagCheckboxes.innerHTML = '';
+            
+            if (tags.length === 0) {
+                tagCheckboxes.innerHTML = '<div class="loading">暫無標籤</div>';
+            } else {
+                tags.forEach(tag => {
+                    const checkboxItem = document.createElement('div');
+                    checkboxItem.className = 'board-checkbox-item';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `tag-${tag}`;
+                    checkbox.value = tag;
+                    checkbox.addEventListener('change', () => {
+                        this.updateSelectedTagsText();
+                        this.applyFilters();
+                    });
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `tag-${tag}`;
+                    label.textContent = tag;
+                    
+                    checkboxItem.appendChild(checkbox);
+                    checkboxItem.appendChild(label);
+                    tagCheckboxes.appendChild(checkboxItem);
+                });
+            }
+            
+            // Update the display text
+            this.updateSelectedTagsText();
+        } catch (error) {
+            console.error('Failed to load tags:', error);
+            const tagCheckboxes = document.getElementById('tagCheckboxes');
+            tagCheckboxes.innerHTML = '<div class="error">載入標籤失敗</div>';
         }
     }
 
@@ -221,6 +268,42 @@ class TrelloApp {
         }
     }
 
+    updateSelectedTagsText() {
+        const checkboxes = document.querySelectorAll('#tagCheckboxes input[type="checkbox"]:checked');
+        const textElement = document.getElementById('selectedTagsText');
+        const count = checkboxes.length;
+        
+        if (count === 0) {
+            textElement.textContent = '未選擇任何標籤';
+        } else if (count === 1) {
+            const tagName = checkboxes[0].nextElementSibling.textContent;
+            textElement.textContent = `已選擇 1 個標籤: ${tagName}`;
+        } else if (count <= 3) {
+            const names = Array.from(checkboxes).map(checkbox => checkbox.nextElementSibling.textContent).join(', ');
+            textElement.textContent = `已選擇 ${count} 個標籤: ${names}`;
+        } else {
+            textElement.textContent = `已選擇 ${count} 個標籤`;
+        }
+    }
+
+    tagSelectAllTags() {
+        const checkboxes = document.querySelectorAll('#tagCheckboxes input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        this.updateSelectedTagsText();
+        this.applyFilters();
+    }
+
+    tagClearTagSelection() {
+        const checkboxes = document.querySelectorAll('#tagCheckboxes input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        this.updateSelectedTagsText();
+        this.applyFilters();
+    }
+
     updateSelectedBoardsText() {
         const select = document.getElementById('boardMultiSelect');
         const textElement = document.getElementById('selectedBoardsText');
@@ -277,6 +360,7 @@ class TrelloApp {
                 await this.loadLastSync();
                 await this.loadBoards();
                 await this.loadMembers();
+                await this.loadTags();
                 await this.loadCards();
             } else {
                 this.showMessage(`同步失敗：${result.error}`, 'error');
@@ -522,12 +606,15 @@ class TrelloApp {
         
         const selectedCheckboxes = document.querySelectorAll('#boardCheckboxes input[type="checkbox"]:checked');
         const selectedBoards = Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
+        const selectedTagCheckboxes = document.querySelectorAll('#tagCheckboxes input[type="checkbox"]:checked');
+        const selectedTags = Array.from(selectedTagCheckboxes).map(checkbox => checkbox.value);
         const dateFrom = document.getElementById('dateFromFilter').value;
         const dateTo = document.getElementById('dateToFilter').value;
         const status = document.getElementById('statusFilter').value;
         const memberId = document.getElementById('memberFilter').value;
         
         if (selectedBoards.length > 0) this.currentFilters.boardIds = selectedBoards.join(',');
+        if (selectedTags.length > 0) this.currentFilters.tagNames = selectedTags.join(',');
         if (dateFrom) this.currentFilters.dateFrom = dateFrom;
         if (dateTo) this.currentFilters.dateTo = dateTo;
         if (status === 'completed') this.currentFilters.completed = 'true';

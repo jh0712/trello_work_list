@@ -37,6 +37,11 @@ const server = new Elysia()
         return members;
       })
 
+      .get('/tags', async () => {
+        const tags = await storage.getTags();
+        return tags;
+      })
+
       .get('/available-boards', async () => {
         try {
           console.log('Fetching available boards from Trello API...');
@@ -63,6 +68,10 @@ const server = new Elysia()
         if (query.dateTo) filters.dateTo = query.dateTo;
         if (query.completed) filters.completed = query.completed === 'true';
         if (query.memberId) filters.memberId = query.memberId;
+        if (query.tagNames) {
+          const tagNamesStr = Array.isArray(query.tagNames) ? query.tagNames[0] : query.tagNames;
+          filters.tagNames = tagNamesStr.split(',').map((name: string) => name.trim()).filter((name: string) => name.length > 0);
+        }
         
         const cards = await storage.getCards(filters);
         
